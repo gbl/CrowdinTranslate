@@ -1,0 +1,17 @@
+{
+    "schemaVersion": 1,
+    "id": "crowdin-translate",
+    "version": "${version}",
+    "entrypoints": {
+    },
+    "custom": {
+    },
+    "mixins": [
+    ],
+    "depends": {
+      "fabric": "*"
+    },
+    "name": "CrowdinTranslate",
+    "description": "Downloads translations (xx_xx.json) files from Crowdin",
+    "authors": [ "Giselbaer" ]
+}
