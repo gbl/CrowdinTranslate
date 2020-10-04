@@ -5,13 +5,17 @@
     "entrypoints": {
     },
     "custom": {
+        "ThanksGoTo": "LambdAurora for letting me use the virtual resource pack loader",
+        "modmenu:api": true
     },
     "mixins": [
+        "mixins.crowdintranslate.json"
     ],
     "depends": {
       "fabric": "*"
     },
     "name": "CrowdinTranslate",
     "description": "Downloads translations (xx_xx.json) files from Crowdin",
+    "icon": "icon.png",
     "authors": [ "Giselbaer" ]
 }

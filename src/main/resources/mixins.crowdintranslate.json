@@ -1,0 +1,12 @@
+{
+    "required": true,
+    "package": "de.guntram.mcmod.crowdintranslate.mixins",
+    "refmap": "crowdin-translate-refmap.json",
+    "minVersion": "0.6",
+    "client": [
+        "ReloadableResourceManagerImplMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

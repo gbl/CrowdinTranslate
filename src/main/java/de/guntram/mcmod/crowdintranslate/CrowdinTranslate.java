@@ -6,9 +6,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.CodeSource;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -18,12 +19,14 @@ public class CrowdinTranslate extends Thread {
     
     private static final Map<String, String> mcCodetoCrowdinCode;
     /* The directory to download to. This is used in the mod; main will overwrite this.  */
-    private static String rootDir = "resourcepacks/ModTranslations";
+    private static String rootDir = "ModTranslations";
     private static boolean thisIsAMod = true;
     private static boolean extractionDone = false;
+    private static final Set<String> registeredMods;
     
     static {
         mcCodetoCrowdinCode = new HashMap<>();
+        registeredMods = new HashSet<>();
 
         add("cs_cz", "cs");
         add("de_de", "de");
@@ -68,81 +71,27 @@ public class CrowdinTranslate extends Thread {
         
     public static void downloadTranslations(String crowdinProjectName, String minecraftProjectName, boolean verbose) {
         
-        // To make sure we won't run in trouble should Fabric ever initialize
-        // several mods at once, do this synchronized. But don't have mods
-        // unneccesarily wait for others if they won't extract anyway.
-
-        if (thisIsAMod && !extractionDone) {
-            synchronized(mcCodetoCrowdinCode) {
-                if (!extractionDone) {
-                    extractionDone = true;
-                    new File(rootDir).mkdirs();
-                    File icon = new File(rootDir, "pack.png");
-                    if (!icon.exists()) {
-                        extractFromSelf("pack.png");
-                    }
-                    if (!(new File(rootDir, "disable.mcmeta")).exists()) {
-                        extractFromSelf("pack.mcmeta");
-                    }
-                    extractFromSelf("README.txt");
-                }
-                extractionDone = true;
-            }
-        }
-
+        registeredMods.add(minecraftProjectName);
         CrowdinTranslate runner = new CrowdinTranslate(crowdinProjectName, minecraftProjectName);
-        if (true || verbose) {
+        if (verbose) {
             runner.setVerbose();
         }
         runner.start();
     }
-    
-    private static void extractFromSelf(String name) {
-        InputStream is = null;
-        ZipInputStream zis = null;
-        CodeSource src = CrowdinTranslate.class.getProtectionDomain().getCodeSource();
-        URL jar = src.getLocation();
-        if (src != null) {
-            try {
-                is = jar.openStream();
-                zis = new ZipInputStream(is);
-                ZipEntry entry;
-                while ((entry = zis.getNextEntry()) != null) {
-                    if (entry.getName().equalsIgnoreCase(name)) {
-                        extractZipEntry(zis, name);
-                        break;
-                    }
-                }
-                zis.close();
-            } catch (IOException ex) {
-            } finally {
-                if (zis != null) {
-                    forceClose(zis);
-                }
-                if (is != null) {
-                    forceClose(is);
-                }
-            }
-        }
-    }
 
-    private static void extractZipEntry(ZipInputStream zipStream, String outputFile) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(new File(rootDir, outputFile))) {
-            byte[] buf=new byte[16384];
-            int length;
-            while ((length=zipStream.read(buf, 0, buf.length))>=0) {
-                fos.write(buf, 0, length);
-            }
-        } catch (IOException ex) {
-            throw ex;
-        }
-    }
-    
     private static void forceClose(Closeable c) {
         try {
             c.close();
         } catch (IOException ex) {
         }
+    }
+    
+    public static Set<String> registeredMods() {
+        return registeredMods;
+    }
+    
+    public static String getRootDir() {
+        return rootDir;
     }
     
     private String crowdinProjectName, minecraftProjectName;
@@ -218,7 +167,7 @@ public class CrowdinTranslate extends Thread {
             }
         } catch (IOException ex) {
             if (zis != null) {
-                tryClose(zis);
+                forceClose(zis);
             }
             throw ex;
         }
@@ -238,13 +187,6 @@ public class CrowdinTranslate extends Thread {
             toRead -= readNow;
         }
         return buf;
-    }
-    
-    private void tryClose(Closeable o) {
-        try {
-            o.close();
-        } catch (Exception ex) {
-        }
     }
     
     private void saveBufferToJsonFile(byte[] buffer, String filename) {
