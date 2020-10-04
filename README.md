@@ -46,8 +46,8 @@ repositories {
 	}
 }
 dependencies {
-    modImplementation "de.guntram.mcmod:crowdin-translate:1.0"
-    include "de.guntram.mcmod:crowdin-translate:1.0"
+    modImplementation "de.guntram.mcmod:crowdin-translate:1.1"
+    include "de.guntram.mcmod:crowdin-translate:1.1"
 }
 ```
 
