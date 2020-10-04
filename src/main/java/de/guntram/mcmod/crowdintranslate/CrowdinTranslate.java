@@ -72,9 +72,9 @@ public class CrowdinTranslate extends Thread {
         // several mods at once, do this synchronized. But don't have mods
         // unneccesarily wait for others if they won't extract anyway.
 
-        if (!extractionDone) {
+        if (thisIsAMod && !extractionDone) {
             synchronized(mcCodetoCrowdinCode) {
-                if (!extractionDone && thisIsAMod) {
+                if (!extractionDone) {
                     extractionDone = true;
                     new File(rootDir).mkdirs();
                     File icon = new File(rootDir, "pack.png");
@@ -261,7 +261,7 @@ public class CrowdinTranslate extends Thread {
         boolean verbose = false;
         int startArg = 0;
         
-        rootDir = ".";
+        rootDir = "src/main/resources";
         thisIsAMod = false;
         if (args.length > 0 && args[0].equals("-v")) {
             verbose = true;
