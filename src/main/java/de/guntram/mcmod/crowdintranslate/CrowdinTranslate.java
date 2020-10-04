@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.CodeSource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -15,7 +16,12 @@ import java.util.zip.ZipInputStream;
 
 public class CrowdinTranslate extends Thread {
     
-    public static Map<String, String> mcCodetoCrowdinCode;
+    private static final Map<String, String> mcCodetoCrowdinCode;
+    /* The directory to download to. This is used in the mod; main will overwrite this.  */
+    private static String rootDir = "resourcepacks/ModTranslations";
+    private static boolean thisIsAMod = true;
+    private static boolean extractionDone = false;
+    
     static {
         mcCodetoCrowdinCode = new HashMap<>();
 
@@ -61,11 +67,82 @@ public class CrowdinTranslate extends Thread {
     }
         
     public static void downloadTranslations(String crowdinProjectName, String minecraftProjectName, boolean verbose) {
+        
+        // To make sure we won't run in trouble should Fabric ever initialize
+        // several mods at once, do this synchronized. But don't have mods
+        // unneccesarily wait for others if they won't extract anyway.
+
+        if (!extractionDone) {
+            synchronized(mcCodetoCrowdinCode) {
+                if (!extractionDone && thisIsAMod) {
+                    extractionDone = true;
+                    new File(rootDir).mkdirs();
+                    File icon = new File(rootDir, "pack.png");
+                    if (!icon.exists()) {
+                        extractFromSelf("pack.png");
+                    }
+                    if (!(new File(rootDir, "disable.mcmeta")).exists()) {
+                        extractFromSelf("pack.mcmeta");
+                    }
+                    extractFromSelf("README.txt");
+                }
+                extractionDone = true;
+            }
+        }
+
         CrowdinTranslate runner = new CrowdinTranslate(crowdinProjectName, minecraftProjectName);
-        if (verbose) {
+        if (true || verbose) {
             runner.setVerbose();
         }
         runner.start();
+    }
+    
+    private static void extractFromSelf(String name) {
+        InputStream is = null;
+        ZipInputStream zis = null;
+        CodeSource src = CrowdinTranslate.class.getProtectionDomain().getCodeSource();
+        URL jar = src.getLocation();
+        if (src != null) {
+            try {
+                is = jar.openStream();
+                zis = new ZipInputStream(is);
+                ZipEntry entry;
+                while ((entry = zis.getNextEntry()) != null) {
+                    if (entry.getName().equalsIgnoreCase(name)) {
+                        extractZipEntry(zis, name);
+                        break;
+                    }
+                }
+                zis.close();
+            } catch (IOException ex) {
+            } finally {
+                if (zis != null) {
+                    forceClose(zis);
+                }
+                if (is != null) {
+                    forceClose(is);
+                }
+            }
+        }
+    }
+
+    private static void extractZipEntry(ZipInputStream zipStream, String outputFile) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(new File(rootDir, outputFile))) {
+            byte[] buf=new byte[16384];
+            int length;
+            while ((length=zipStream.read(buf, 0, buf.length))>=0) {
+                fos.write(buf, 0, length);
+            }
+        } catch (IOException ex) {
+            throw ex;
+        }
+    }
+    
+    private static void forceClose(Closeable c) {
+        try {
+            c.close();
+        } catch (IOException ex) {
+        }
     }
     
     private String crowdinProjectName, minecraftProjectName;
@@ -92,7 +169,8 @@ public class CrowdinTranslate extends Thread {
             return;
         }
         
-        String assetDir = "assets"+File.separatorChar+minecraftProjectName+File.separatorChar+"lang";
+        String assetDir = rootDir+File.separatorChar+"assets"+File.separatorChar
+                                +minecraftProjectName+File.separatorChar+"lang";
         new File(assetDir).mkdirs();
 
         for (Map.Entry<String, String> entry: mcCodetoCrowdinCode.entrySet()) {
@@ -130,7 +208,7 @@ public class CrowdinTranslate extends Thread {
                         // could exhaust our memory.
                         throw new IOException("file too large: "+entry.getName()+": "+entry.getSize());
                     }
-                    byte[] zipFileContent = getIsContent(zis, (int) entry.getSize());
+                    byte[] zipFileContent = getZipStreamContent(zis, (int) entry.getSize());
                     if (zipContents.containsKey(crowdinLang)) {
                         System.err.println("More than one file for "+crowdinLang+", ignoring "+origFileName);
                         continue;
@@ -147,7 +225,7 @@ public class CrowdinTranslate extends Thread {
         return zipContents;
     }
     
-    private byte[] getIsContent(InputStream is, int size) throws IOException {
+    private byte[] getZipStreamContent(InputStream is, int size) throws IOException {
         byte[] buf = new byte[size];
         int toRead = size;
         int totalRead = 0, readNow;
@@ -183,6 +261,8 @@ public class CrowdinTranslate extends Thread {
         boolean verbose = false;
         int startArg = 0;
         
+        rootDir = ".";
+        thisIsAMod = false;
         if (args.length > 0 && args[0].equals("-v")) {
             verbose = true;
             ++startArg;
@@ -197,7 +277,6 @@ public class CrowdinTranslate extends Thread {
             System.out.println("\t-v enables verbose logging");
             System.out.println("\tGet the translations from crowdin.com/project/name\n\tand write them to assets/project/lang");
             System.out.println("\tThe second parameter is only neccesary if the crowdin project name\n\tdoesn't match the minecraft project name");
-
         }
     }
 }
