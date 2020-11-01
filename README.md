@@ -8,20 +8,22 @@ easy as possible in your mods. The jar file is, at the same time:
 CrowdIn, and distribute these translations to the correct file names in the
 correct folder
 
+- A gradle plugin to automate getting translations from your build process
+
 - A Fabric library mod which you can use in your own mods which downloads
 updated translations, and makes them available in a resource pack, to your
 users, so you don't have to publish a new version of your mod, and people
 don't need to redownload, when new translations appear
 
 - A Java library that you can just shade in from your Forge mods, with the same
-functionality as for the Fabric mod
+functionality as for the Fabric mod (yet to be implemented ...)
 
 
 
 ## Getting started
 
 Create a CrowdIn project, (if possible, use the same project name as your mod id).
-Upload your en_us.json, get it translated, build the project. More detailled 
+Upload your en_us.json, get it translated, build the project. More detailed 
 info below.
 
 ## Manual usage:
@@ -35,7 +37,50 @@ If you weren't able to use your modid for your crowdin project, run
 
 ## Automatic usage:
 
-(this needs some more info to use with Forge, and how to get the version number)
+In your build.gradle, at the very top (before `plugins`), add this:
+
+```
+buildscript {
+    dependencies {
+        classpath 'de.guntram.mcmod:crowdin-translate:1.2'
+    }
+    repositories {
+        maven {
+            name = 'CrowdinTranslate source'
+            url = "https://minecraft.guntram.de/maven/"
+        }
+    }
+}
+```
+
+and somewhere later (after plugins) add:
+
+```
+apply plugin: 'de.guntram.mcmod.crowdin-translate'
+crowdintranslate.crowdinProjectName = '<modid>'
+crowdintranslate.minecraftProjectName = '<modid>'
+crowdintranslate.verbose = false
+```
+
+You can omit the minecraftProjectName if the ids are the same, and you can
+set verbose to true to see more about what's happening in the build process.
+
+This will give you a new gradle task: `gradle downloadTranslations` fetches 
+all translations to your src/main/resources/assets/<modid>/lang directory.
+
+To do this automatically when you build the project, add something like this
+to the end of your build.gradle:
+
+```
+build {
+        dependsOn downloadTranslations
+}
+```
+
+## Have your mod automatically check for new translations
+
+That way your users can get new translations automatically, without
+you re-publishing your mod, and them having to re-download it.
 
 Add this to your build.gradle:
 
@@ -46,8 +91,8 @@ repositories {
 	}
 }
 dependencies {
-    modImplementation "de.guntram.mcmod:crowdin-translate:1.1"
-    include "de.guntram.mcmod:crowdin-translate:1.1"
+    modImplementation "de.guntram.mcmod:crowdin-translate:1.2"
+    include "de.guntram.mcmod:crowdin-translate:1.2"
 }
 ```
 
@@ -77,7 +122,8 @@ to use the two parameter form with CrowdIn name first, and mod id second:
 CrowdinTranslate.downloadTranslations("projectname", "modid");
 ```
 
-This will download the translations from `https://crowdin.com/project/projectname`
+This will download the translations from
+`https://crowdin.com/project/projectname`
 to `assets/modid/lang`.
 
 
