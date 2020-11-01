@@ -72,6 +72,9 @@ public class CrowdinTranslate extends Thread {
     public static void downloadTranslations(String crowdinProjectName, String minecraftProjectName, boolean verbose) {
         
         registeredMods.add(minecraftProjectName);
+        if (thisIsAMod && projectDownloadedRecently(minecraftProjectName)) {
+            return;
+        }
         CrowdinTranslate runner = new CrowdinTranslate(crowdinProjectName, minecraftProjectName);
         if (verbose) {
             runner.setVerbose();
@@ -139,6 +142,7 @@ public class CrowdinTranslate extends Thread {
                 saveBufferToJsonFile(buffer, filePath);
             }
         }
+        markDownloadedNow(minecraftProjectName);
     }
         
     private Map<String, byte[]> getCrowdinTranslations(String projectName) throws IOException {    
@@ -204,6 +208,25 @@ public class CrowdinTranslate extends Thread {
         } catch (IOException ex) {
             System.err.println("failed to write "+filename);
         }
+    }
+    
+    private static boolean projectDownloadedRecently(String projectName) {
+        File file =  new File(rootDir, projectName+".timestamp");
+        if (file.exists() && file.lastModified() > System.currentTimeMillis() - 86400 * 10000) {
+            return true;
+        }
+        return false;
+    }
+    
+    private static void markDownloadedNow(String projectName) {
+        File file =  new File(rootDir, projectName+".timestamp");
+        try {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch (IOException ex) {
+            // bad luck, we'll just check again next time.
+        }
+        file.setLastModified(System.currentTimeMillis());
     }
 
     public static void main(String[] args) {
