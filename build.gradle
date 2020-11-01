@@ -1,5 +1,6 @@
 plugins {
 	id 'fabric-loom' version '0.4-SNAPSHOT'
+    id 'java-gradle-plugin'
 }
 
 apply plugin: 'maven'
@@ -28,6 +29,7 @@ processResources {
 
 // These are, actually, not even used in this project.
 // They are only included to make loom happy.
+// Use old versions intentionally to make this work with a broad range of MCs.
 dependencies {
     minecraft  "com.mojang:minecraft:1.15.2"
     mappings   "net.fabricmc:yarn:1.15.2+build.7:v2"
@@ -50,13 +52,23 @@ jar {
             'Main-Class': 'de.guntram.mcmod.crowdintranslate.CrowdinTranslate'
         )
     }
+    
+}
+
+gradlePlugin {
+    plugins {
+        gradleplugin {
+            id = 'de.guntram.mcmod.crowdin-translate'
+            implementationClass = 'de.guntram.mcmod.crowdintranslate.GradlePlugin.CrowdinTranslatePlugin'
+        }
+    }
 }
 
 group = "de.guntram.mcmod"
 uploadArchives {
     repositories {
         mavenDeployer {
-	    repository(url: "file://localhost/tmp/mymavenrepo")
+	        repository(url: "file://localhost/tmp/mymavenrepo")
         }
     }
 }

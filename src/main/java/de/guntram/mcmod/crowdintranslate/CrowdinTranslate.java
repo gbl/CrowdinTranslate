@@ -77,6 +77,13 @@ public class CrowdinTranslate extends Thread {
             runner.setVerbose();
         }
         runner.start();
+        if (!thisIsAMod) {
+            try {
+                runner.join(10000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     private static void forceClose(Closeable c) {
