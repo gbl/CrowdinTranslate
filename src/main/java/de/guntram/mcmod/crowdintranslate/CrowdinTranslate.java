@@ -40,6 +40,7 @@ public class CrowdinTranslate extends Thread {
         add("es_ve", "es-ES");
         add("fi_fi", "fi");
         add("fr_fr", "fr");
+        add("he_il", "he");
         add("it_it", "it");
         add("ja_jp", "ja");
         add("ko_kr", "ko");
