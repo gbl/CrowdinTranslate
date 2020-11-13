@@ -38,6 +38,7 @@ public class CrowdinTranslate extends Thread {
         add("es_mx", "es-ES");
         add("es_uy", "es-ES");
         add("es_ve", "es-ES");
+        add("et_ee", "et");
         add("fi_fi", "fi");
         add("fr_fr", "fr");
         add("he_il", "he");
