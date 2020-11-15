@@ -3,6 +3,7 @@ package de.guntram.mcmod.crowdintranslate.GradlePlugin;
 public class CrowdinTranslateParameters {
     String crowdinProjectName;
     String minecraftProjectName;
+    String jsonSourceName;
     boolean verbose;
     
     public void setCrowdinProjectname(String s) {
@@ -19,6 +20,14 @@ public class CrowdinTranslateParameters {
     
     public String getMinecraftProjectName() {
         return minecraftProjectName;
+    }
+    
+    public void setJsonSourceName(String s) {
+        jsonSourceName = s;
+    }
+    
+    public String getJsonSourceName() {
+        return jsonSourceName;
     }
     
     public void setVerbose(boolean b) {

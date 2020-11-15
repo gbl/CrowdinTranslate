@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,8 +71,12 @@ public class CrowdinTranslate extends Thread {
     public static void downloadTranslations(String crowdinProjectName, String minecraftProjectName) {
         downloadTranslations(crowdinProjectName, minecraftProjectName, false);
     }
-        
+    
     public static void downloadTranslations(String crowdinProjectName, String minecraftProjectName, boolean verbose) {
+        downloadTranslations(crowdinProjectName, minecraftProjectName, null, verbose);
+    }
+
+    public static void downloadTranslations(String crowdinProjectName, String minecraftProjectName, String sourcefileOverride, boolean verbose) {
         
         registeredMods.add(minecraftProjectName);
         if (thisIsAMod && projectDownloadedRecently(minecraftProjectName)) {
@@ -80,6 +85,9 @@ public class CrowdinTranslate extends Thread {
         CrowdinTranslate runner = new CrowdinTranslate(crowdinProjectName, minecraftProjectName);
         if (verbose) {
             runner.setVerbose();
+        }
+        if (sourcefileOverride != null) {
+            runner.setSourceFileOverride(sourcefileOverride);
         }
         runner.start();
         if (!thisIsAMod) {
@@ -107,6 +115,7 @@ public class CrowdinTranslate extends Thread {
     }
     
     private String crowdinProjectName, minecraftProjectName;
+    private Optional<String> sourceFileOverride = Optional.empty();
     private boolean verbose;
     
     private CrowdinTranslate(String crowdinProjectName, String minecraftProjectName) {
@@ -117,6 +126,16 @@ public class CrowdinTranslate extends Thread {
     
     private void setVerbose() {
         verbose = true;
+    }
+    
+    private void setSourceFileOverride(String name) {
+        if (name == null) {
+            sourceFileOverride = Optional.empty();
+        } else if (name.toLowerCase().endsWith((".json"))) {
+            sourceFileOverride = Optional.of(name);
+        } else {
+            sourceFileOverride = Optional.of(name+".json");
+        }
     }
     
     @Override
@@ -144,7 +163,9 @@ public class CrowdinTranslate extends Thread {
                 saveBufferToJsonFile(buffer, filePath);
             }
         }
-        markDownloadedNow(minecraftProjectName);
+        if (thisIsAMod) {
+            markDownloadedNow(minecraftProjectName);
+        }
     }
         
     private Map<String, byte[]> getCrowdinTranslations(String projectName) throws IOException {    
@@ -154,6 +175,9 @@ public class CrowdinTranslate extends Thread {
 
         try {
             URL url = new URL("https://crowdin.com/backend/download/project/"+projectName+".zip");
+            if (verbose) {
+                System.out.println("Trying to download "+url);
+            }
             zis = new ZipInputStream(url.openStream());
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
@@ -162,6 +186,12 @@ public class CrowdinTranslate extends Thread {
                 if (matcher.matches()) {
                     String crowdinLang = matcher.group(1);
                     String origFileName = matcher.group(3);
+                    if (sourceFileOverride.isPresent() && !sourceFileOverride.get().equals(origFileName)) {
+                        if (verbose) {
+                            System.out.println("Ignoring "+path+", we're looking for "+sourceFileOverride.get());
+                        }
+                        continue;
+                    }
                     if (verbose) {
                         System.out.println("Found translation \""+crowdinLang+"\" for file "+origFileName);
                     }
@@ -245,6 +275,8 @@ public class CrowdinTranslate extends Thread {
             downloadTranslations(args[startArg], args[startArg], verbose);
         } else if (args.length == startArg+2) {
             downloadTranslations(args[startArg], args[startArg+1], verbose);
+        } else if (args.length == startArg+3) {
+            downloadTranslations(args[startArg], args[startArg+1], args[startArg+2], verbose);
         }
         else {
             System.out.println("Usage: CrowdinTranslate [-v] crowdin_project_name [minecraft_project_name]");

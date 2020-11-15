@@ -12,7 +12,7 @@ public class DownloadTask extends AbstractTask {
             System.err.println("No crowdin project name given, nothing downloaded");
             return;
         }
-        String[] args = new String[ (parms.getVerbose() ? 3 : 2) ];
+        String[] args = new String[ (parms.getVerbose() ? 4 : 3) ];
         int argc = 0;
         if (parms.getVerbose()) {
             args[argc++] = "-v";
@@ -21,6 +21,7 @@ public class DownloadTask extends AbstractTask {
         String mpn = parms.getMinecraftProjectName();
         args[argc++] = cpn;
         args[argc++] = (mpn == null ? cpn : mpn);
+        args[argc++] = parms.getJsonSourceName();
 
         CrowdinTranslate.main(args);
         this.setDidWork(true);
