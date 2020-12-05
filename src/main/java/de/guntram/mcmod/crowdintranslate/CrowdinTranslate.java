@@ -22,7 +22,6 @@ public class CrowdinTranslate extends Thread {
     /* The directory to download to. This is used in the mod; main will overwrite this.  */
     private static String rootDir = "ModTranslations";
     private static boolean thisIsAMod = true;
-    private static boolean extractionDone = false;
     private static final Set<String> registeredMods;
     
     static {
@@ -244,7 +243,7 @@ public class CrowdinTranslate extends Thread {
     
     private static boolean projectDownloadedRecently(String projectName) {
         File file =  new File(rootDir, projectName+".timestamp");
-        if (file.exists() && file.lastModified() > System.currentTimeMillis() - 86400 * 10000) {
+        if (file.exists() && file.lastModified() > System.currentTimeMillis() - 86400 * 3000) {
             return true;
         }
         return false;
