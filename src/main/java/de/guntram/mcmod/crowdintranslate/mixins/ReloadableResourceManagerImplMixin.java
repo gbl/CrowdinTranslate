@@ -28,7 +28,7 @@ public abstract class ReloadableResourceManagerImplMixin implements ReloadableRe
             method = "beginMonitoredReload",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/resource/ReloadableResourceManagerImpl;beginReloadInner(Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/List;Ljava/util/concurrent/CompletableFuture;)Lnet/minecraft/resource/ResourceReloadMonitor;",
+                    target = "Lorg/apache/logging/log4j/Logger;isDebugEnabled()Z",
                     shift = At.Shift.BEFORE
             )
     )
