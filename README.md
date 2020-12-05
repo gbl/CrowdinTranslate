@@ -42,7 +42,7 @@ In your build.gradle, at the very top (before `plugins`), add this:
 ```
 buildscript {
     dependencies {
-        classpath 'de.guntram.mcmod:crowdin-translate:1.2'
+        classpath 'de.guntram.mcmod:crowdin-translate:1.3+1.16'
     }
     repositories {
         maven {
@@ -53,7 +53,10 @@ buildscript {
 }
 ```
 
-and somewhere later (after plugins) add:
+(note that you can use this no matter which Minecraft version you're compiling
+for, even if the maven version number says 1.16).
+
+Then, somewhere later (after plugins) add:
 
 ```
 apply plugin: 'de.guntram.mcmod.crowdin-translate'
@@ -91,10 +94,14 @@ repositories {
 	}
 }
 dependencies {
-    modImplementation "de.guntram.mcmod:crowdin-translate:1.2"
-    include "de.guntram.mcmod:crowdin-translate:1.2"
+    modImplementation "de.guntram.mcmod:crowdin-translate:<version>"
+    include "de.guntram.mcmod:crowdin-translate:<version>"
 }
 ```
+
+where `version` is currently either `1.3+1.16` or `1.3+1.17-alpha20w49a`.
+(The `1.3+1.16` version actually works for all versions from 1.15.2 to 20w48a,
+20w49a introduced an incompatible change.)
 
 and this to your ClientModInitializer:
 
@@ -126,7 +133,35 @@ This will download the translations from
 `https://crowdin.com/project/projectname`
 to `assets/modid/lang`.
 
+### What if I have the translation files for several mods in the same crowdin
+project?
 
+Since version 1.3, you can override the translation source name that
+crowdin-translate checks for. So, if your mods are named foo, bar, and baz,
+you can have one single crowdin project that has them all, and have file names
+`foo.json`, `bar.json` and `thisisnotbaz.json` for your source.
+
+Assuming your crowdin project name is `allmymods`,
+adjust the above use cases like this:
+
+* manual usage:
+```
+java -jar crowdintranslate-<version>.jar allmymods foo foo
+java -jar crowdintranslate-<version>.jar allmymods bar bar
+java -jar crowdintranslate-<version>.jar allmymods baz thisisnotbaz
+```
+
+* usage in gradle: add a 'jsonSourceName' parameter
+
+```
+crowdintranslate.jsonSourceName = 'thisisnotbaz'
+```
+
+* usage in your `ClientModInitializer`: use the 3 argument call:
+
+```
+CrowdinTranslate.downloadTranslations("allmymods", "baz", "thisisnotbaz");
+```
 
 ### Getting started
 (this needs some redoing)
