@@ -75,6 +75,10 @@ public class CrowdinTranslate extends Thread {
         downloadTranslations(crowdinProjectName, minecraftProjectName, null, verbose);
     }
 
+    public static void downloadTranslations(String crowdinProjectName, String minecraftProjectName, String sourcefileOverride) {
+        downloadTranslations(crowdinProjectName, minecraftProjectName, sourcefileOverride, false);
+    }
+
     public static void downloadTranslations(String crowdinProjectName, String minecraftProjectName, String sourcefileOverride, boolean verbose) {
         
         registeredMods.add(minecraftProjectName);
