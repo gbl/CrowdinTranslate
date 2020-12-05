@@ -133,8 +133,7 @@ This will download the translations from
 `https://crowdin.com/project/projectname`
 to `assets/modid/lang`.
 
-### What if I have the translation files for several mods in the same crowdin
-project?
+### What if I have the translation files for several mods in the same crowdin project?
 
 Since version 1.3, you can override the translation source name that
 crowdin-translate checks for. So, if your mods are named foo, bar, and baz,
