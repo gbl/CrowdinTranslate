@@ -242,6 +242,8 @@ public class CrowdinTranslate extends Thread {
             stream.write(buffer);
         } catch (IOException ex) {
             System.err.println("failed to write "+filename);
+            System.err.println("absolute path is "+file.getAbsolutePath());
+            ex.printStackTrace(System.err);
         }
     }
     
