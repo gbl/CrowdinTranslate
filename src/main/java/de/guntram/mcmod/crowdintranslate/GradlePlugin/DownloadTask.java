@@ -1,10 +1,10 @@
 package de.guntram.mcmod.crowdintranslate.GradlePlugin;
 
 import de.guntram.mcmod.crowdintranslate.CrowdinTranslate;
-import org.gradle.api.internal.AbstractTask;
+import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 
-public class DownloadTask extends AbstractTask {
+public class DownloadTask extends DefaultTask {
     @TaskAction
     public void action() {
         CrowdinTranslateParameters parms = CrowdinTranslatePlugin.parameters;
