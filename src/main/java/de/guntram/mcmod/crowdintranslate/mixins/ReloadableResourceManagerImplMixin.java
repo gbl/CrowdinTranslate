@@ -25,14 +25,14 @@ public abstract class ReloadableResourceManagerImplMixin implements ReloadableRe
     public abstract void addPack(ResourcePack resourcePack);
 
     @Inject(
-            method = "beginMonitoredReload",
+            method = "reload",
             at = @At(
                     value = "INVOKE",
                     target = "Lorg/apache/logging/log4j/Logger;isDebugEnabled()Z",
                     shift = At.Shift.BEFORE
             )
     )
-    private void onPostReload(Executor prepareExecutor, Executor applyExecutor, CompletableFuture<Unit> initialStage, List<ResourcePack> packs, CallbackInfoReturnable<ResourceReloadMonitor> cir)
+    private void onPostReload(Executor prepareExecutor, Executor applyExecutor, CompletableFuture<Unit> initialStage, List<ResourcePack> packs, CallbackInfoReturnable<ResourceReload> cir)
     {
         if (this.type != ResourceType.CLIENT_RESOURCES)
             return;
