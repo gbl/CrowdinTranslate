@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.7-SNAPSHOT'
+    id 'fabric-loom' version '0.8-SNAPSHOT'
     id 'java-gradle-plugin'
     id 'maven-publish'
 }
@@ -8,7 +8,7 @@ sourceCompatibility = 16
 targetCompatibility = 16
 
 archivesBaseName = "crowdin-translate"
-version = "1.3+1.17-pre5b"
+version = "1.3+1.17"
 
 minecraft {
     refmapName = "crowdin-translate-refmap.json";
@@ -26,8 +26,8 @@ processResources {
 // They are only included to make loom happy.
 // Use old versions intentionally to make this work with a broad range of MCs.
 dependencies {
-    minecraft  "com.mojang:minecraft:1.17-pre5"
-    mappings   "net.fabricmc:yarn:1.17-pre5+build.1:v2"
+    minecraft  "com.mojang:minecraft:1.17"
+    mappings   "net.fabricmc:yarn:1.17+build.1:v2"
     modImplementation "net.fabricmc:fabric-loader:0.11.3"
 }
 
@@ -47,7 +47,6 @@ jar {
             'Main-Class': 'de.guntram.mcmod.crowdintranslate.CrowdinTranslate'
         )
     }
-    
 }
 
 gradlePlugin {
@@ -64,7 +63,7 @@ publishing {
     publications {
 	mavenJava(MavenPublication) {
 	    artifact(remapJar) {
-		builtBy remapJar
+		// builtBy remapJar
 	    }
 	}
     }
@@ -75,16 +74,6 @@ publishing {
     }
 }
 
-/*
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "file://localhost/tmp/mymavenrepo")
-        }
-    }
-}
-
-task publish(dependsOn: uploadArchives, type: Exec) {
+task mypublish(dependsOn: publish, type: Exec) {
     commandLine "rsync", "-av", "/tmp/mymavenrepo/", "maven@minecraft.guntram.de:/var/www/html/maven/"
 }
-*/

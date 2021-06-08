@@ -42,7 +42,7 @@ In your build.gradle, at the very top (before `plugins`), add this:
 ```
 buildscript {
     dependencies {
-        classpath 'de.guntram.mcmod:crowdin-translate:1.3+1.16'
+        classpath 'de.guntram.mcmod:crowdin-translate:1.3+1.17'
     }
     repositories {
         maven {
@@ -54,7 +54,7 @@ buildscript {
 ```
 
 (note that you can use this no matter which Minecraft version you're compiling
-for, even if the maven version number says 1.16).
+for, even if the maven version number says 1.17).
 
 Then, somewhere later (after plugins) add:
 
@@ -99,9 +99,9 @@ dependencies {
 }
 ```
 
-where `version` is currently either `1.3+1.16` or `1.3+1.17-alpha20w49a`.
+where `version` is currently either `1.3+1.16` or `1.3+1.17`.
 (The `1.3+1.16` version actually works for all versions from 1.15.2 to 20w48a,
-20w49a introduced an incompatible change.)
+20w49a introduced an incompatible change. 1.3+1.17 works from 1.17 on.)
 
 and this to your ClientModInitializer:
 
@@ -161,19 +161,3 @@ crowdintranslate.jsonSourceName = 'thisisnotbaz'
 ```
 CrowdinTranslate.downloadTranslations("allmymods", "baz", "thisisnotbaz");
 ```
-
-### Getting started
-(this needs some redoing)
-- Create an account on CrowdIn (https://crowdin.com)
-- Optional but recommended: apply for a open source membership so you can start multiple projects, for free
-- Create a project. This will ask for a project name, and a project address. 
-If possible, select your address so the identifier matches your mod id
-(the mod `foobar` should have `https://crowdin.com/project/foobar`).
-- Switch the source language from English to English, United States. This is not
-100% neccesary, but will make things easier, especially if your original json
-file is named `en_us.json`.
-- Add the target languages you want to use. (In a future version of CrowdinTranslate,
-there will be an easy way to consistently set the languages for a collection 
-of mods)
-- Once your project is created, upload your en_us.json. Then, do some translations,
-or get people to do that for you.
