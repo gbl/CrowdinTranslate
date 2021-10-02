@@ -52,6 +52,7 @@ public class CrowdinTranslate extends Thread {
         add("en_gb", "en-GB");
         add("en_nz", "en-NZ");
         add("en_pt", "en-PT");
+        add("en_za", "en-ZA");
         add("en_ud", "en-UD");
         add("en_us", "en-US");
         //add("enp", "enp");			// Anglish
@@ -105,6 +106,7 @@ public class CrowdinTranslate extends Thread {
         add("lt_lt", "lt");
         add("lv_lv", "lv");
         //add("lzh", "lzh");			// Classical Chinese
+        add("mi_NZ", "mi");
         add("mk_mk", "mk");
         add("mn_mn", "mn");
         add("ms_my", "ms");
