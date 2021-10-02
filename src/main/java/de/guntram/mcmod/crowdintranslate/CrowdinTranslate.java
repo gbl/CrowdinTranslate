@@ -113,6 +113,7 @@ public class CrowdinTranslate extends Thread {
         add("lt_lt", "lt");
         add("lv_lv", "lv");
         //add("lzh", "lzh");			// Classical Chinese
+        add("mi_NZ", "mi");
         add("mk_mk", "mk");
         add("mn_mn", "mn");
         add("ms_my", "ms");
