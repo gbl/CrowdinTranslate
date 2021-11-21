@@ -1,8 +1,11 @@
 package de.guntram.mcmod.crowdintranslate;
 
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -16,6 +19,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+
 public class CrowdinTranslate extends Thread {
     
     private static final Map<String, String> mcCodetoCrowdinCode;
@@ -23,6 +27,8 @@ public class CrowdinTranslate extends Thread {
     private static String rootDir = "ModTranslations";
     private static boolean thisIsAMod = true;
     private static final Set<String> registeredMods;
+    enum Tristate { UNKNOWN,YES,NO };
+    private static Tristate downloadsAllowed = Tristate.UNKNOWN;
     
     static {
         mcCodetoCrowdinCode = new HashMap<>();
@@ -43,27 +49,27 @@ public class CrowdinTranslate extends Thread {
         add("cs_cz", "cs");
         add("cy_gb", "cy");
         add("da_dk", "da");
-        add("de_at", "de-AT");
-        add("de_ch", "de-CH");
+        add("de_at", "de-AT,de");
+        add("de_ch", "de-CH,de");
         add("de_de", "de");
         add("el_gr", "el");
-        add("en_au", "de-AT");
-        add("en_ca", "en-CA");
-        add("en_gb", "en-GB");
-        add("en_nz", "en-NZ");
-        add("en_pt", "en-PT");
-        add("en_ud", "en-UD");
+        add("en_au", "en-AU,en-GB,en-US");
+        add("en_ca", "en-CA,en-GB,en-US");
+        add("en_gb", "en-GB,en-US");
+        add("en_nz", "en-NZ,en-GB,en-US");
+        add("en_pt", "en-PT,en-GB,en-US");
+        add("en_ud", "en-UD,en-GB,en-US");
         add("en_us", "en-US");
         //add("enp", "enp");			// Anglish
         //add("enws", "enws");			// Shakespearean English
         add("eo_uy", "eo");
-        add("es_ar", "es-AR");
-        add("es_cl", "es-CL");
-        add("es_ec", "es-EC");
+        add("es_ar", "es-AR,es-ES");
+        add("es_cl", "es-CL,es-ES");
+        add("es_ec", "es-EC,es-ES");
         add("es_es", "es-ES");
-        add("es_mx", "es-MX");
-        add("es_uy", "es-UY");
-        add("es_ve", "es-VE");
+        add("es_mx", "es-MX,es-ES");
+        add("es_uy", "es-UY,es-ES");
+        add("es_ve", "es-VE,es-ES");
         //add("esan", "esan");			// Andalusian
         add("et_ee", "et");
         add("eu_es", "eu");
@@ -71,7 +77,7 @@ public class CrowdinTranslate extends Thread {
         add("fi_fi", "fi");
         add("fil_ph", "fil");
         add("fo_fo", "fo");
-        add("fr_ca", "fr-CA");
+        add("fr_ca", "fr-CA,fr");
         add("fr_fr", "fr");
         add("fra_de", "fra-DE");
         add("fy_nl", "fy-NL");
@@ -110,15 +116,15 @@ public class CrowdinTranslate extends Thread {
         add("ms_my", "ms");
         add("mt_mt", "mt");
         add("nds_de", "nds");
-        add("nl_be", "nl-BE");
+        add("nl_be", "nl-BE,nl");
         add("nl_nl", "nl");
-        add("nn_no", "nn-NO");
+        add("nn_no", "nn-NO,no");
         add("no_no‌", "no");
         add("oc_fr", "oc");
         //add("ovd", "ovd");			// Elfdalian
         add("pl_pl", "pl");
-        add("pt_br", "pt-BR");
-        add("pt_pt", "pt-PT");
+        add("pt_br", "pt-BR,pt-PT");
+        add("pt_pt", "pt-PT,pt-BR");
         add("qya_aa", "qya-AA");
         add("ro_ro", "ro");
         //add("rpr", "rpr");			// Russian (pre-revolutionary)
@@ -144,8 +150,8 @@ public class CrowdinTranslate extends Thread {
         add("vi_vn", "vi");
         add("yi_de", "yi");
         add("yo_ng", "yo");
-        add("zh_cn", "zh-CN");
-        add("zh_hk", "zh-HK");
+        add("zh_cn", "zh-CN,zh-HK");
+        add("zh_hk", "zh-HK,zh-CN");
         add("zh_tw", "zh-TW");
     }
     
@@ -172,7 +178,7 @@ public class CrowdinTranslate extends Thread {
     public static void downloadTranslations(String crowdinProjectName, String minecraftProjectName, String sourcefileOverride, boolean verbose) {
         
         registeredMods.add(minecraftProjectName);
-        if (thisIsAMod && projectDownloadedRecently(minecraftProjectName)) {
+        if (thisIsAMod && ( !downloadsAllowed() || projectDownloadedRecently(minecraftProjectName))) {
             return;
         }
         CrowdinTranslate runner = new CrowdinTranslate(crowdinProjectName, minecraftProjectName);
@@ -190,6 +196,44 @@ public class CrowdinTranslate extends Thread {
                 ex.printStackTrace();
             }
         }
+    }
+    
+    // This is a bit of a stretch, but the method gets called in fabric mod
+    // context only. We don't want to add a dependency on a whole json library
+    // or anything, so we just check if there's a config/crowdin.txt file.
+    // If there is, and it contains "download=no" or "download=false" or "download=0",
+    // we don't download anything.
+    // This should be synchronized in case Fabric ever initializes two mods at
+    // once; they shouldn't access the file at the same time.
+    private static synchronized boolean downloadsAllowed() {
+        if (downloadsAllowed != Tristate.UNKNOWN) {
+            return downloadsAllowed == Tristate.YES;
+        }
+        File file = new File("config/crowdin.txt");
+        if (file.exists()) {
+            try (FileReader fr = new FileReader(file);
+                 BufferedReader br = new BufferedReader(fr))
+            {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.startsWith("download=")) {
+                        String val = line.substring(9);
+                        if ("0".equals(val) || "false".equalsIgnoreCase(val) || "no".equalsIgnoreCase(val)) {
+                            downloadsAllowed=Tristate.NO;
+                            return false;
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+            }
+        } else {
+            try (FileWriter fw = new FileWriter(file)) {
+                fw.append("#Change this to no to prevent mod translation downloads\ndownload=yes\n");
+            } catch (IOException ex) {
+            }
+        }
+        downloadsAllowed=Tristate.YES;
+        return true;
     }
 
     private static void forceClose(Closeable c) {
@@ -247,13 +291,17 @@ public class CrowdinTranslate extends Thread {
         new File(assetDir).mkdirs();
 
         for (Map.Entry<String, String> entry: mcCodetoCrowdinCode.entrySet()) {
-            byte[] buffer = translations.get(entry.getValue());
-            if (buffer != null) {
-                String filePath = assetDir+File.separatorChar+entry.getKey()+".json";
-                if (verbose) {
-                    System.out.println("writing "+buffer.length+" bytes from \""+entry.getValue()+"\" to MC file "+filePath);
+            String[] sourcesByPreference = entry.getValue().split(",");
+            for (String attemptingSource: sourcesByPreference) {
+                byte[] buffer = translations.get(attemptingSource);
+                if (buffer != null) {
+                    String filePath = assetDir+File.separatorChar+entry.getKey()+".json";
+                    if (verbose) {
+                        System.out.println("writing "+buffer.length+" bytes from \""+attemptingSource+"\" to MC file "+filePath);
+                    }
+                    saveBufferToJsonFile(buffer, filePath);
+                    break;
                 }
-                saveBufferToJsonFile(buffer, filePath);
             }
         }
         if (thisIsAMod) {
