@@ -24,20 +24,39 @@ public abstract class ReloadableResourceManagerImplMixin implements ReloadableRe
     @Shadow
     public abstract void addPack(ResourcePack resourcePack);
 
+    // Compatibility with 22w03a+ using slf4j logger instead of log4j
     @Inject(
             method = "reload",
             at = @At(
                     value = "INVOKE",
-                    target = "Lorg/apache/logging/log4j/Logger;isDebugEnabled()Z",
+                    target = "Lorg/slf4j/Logger;isDebugEnabled()Z",
                     shift = At.Shift.BEFORE
-            )
+            ),
+            require = 0
     )
     private void onPostReload(Executor prepareExecutor, Executor applyExecutor, CompletableFuture<Unit> initialStage, List<ResourcePack> packs, CallbackInfoReturnable<ResourceReload> cir)
     {
         if (this.type != ResourceType.CLIENT_RESOURCES)
             return;
 
-        System.out.println("Inject generated resource packs.");
+        this.addPack(new CTResourcePack());
+    }
+
+    // Compatibility with 1.18.1 and below using log4j
+    @Inject(
+            method = "reload",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lorg/apache/logging/log4j/Logger;isDebugEnabled()Z",
+                    shift = At.Shift.BEFORE
+            ),
+            require = 0
+    )
+    private void onPostReloadLegacy(Executor prepareExecutor, Executor applyExecutor, CompletableFuture<Unit> initialStage, List<ResourcePack> packs, CallbackInfoReturnable<ResourceReload> cir)
+    {
+        if (this.type != ResourceType.CLIENT_RESOURCES)
+            return;
+
         this.addPack(new CTResourcePack());
     }
 }
