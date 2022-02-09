@@ -6,7 +6,11 @@
     },
     "custom": {
         "ThanksGoTo": "LambdAurora for letting me use the virtual resource pack loader",
-        "modmenu:api": true
+        "modmenu": {
+            "badges": [
+                "library"
+	    ]
+	}
     },
     "mixins": [
         "mixins.crowdintranslate.json"
