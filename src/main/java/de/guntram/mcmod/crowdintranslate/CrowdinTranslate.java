@@ -62,7 +62,7 @@ public class CrowdinTranslate extends Thread {
         add("en_us", "en-US");
         //add("enp", "enp");			// Anglish
         add("en_ws", "en-WS");
-        add("en_pt", "en-PT");
+        add("en_7s", "en-PT");
         add("en_ud", "en-UD");
         add("eo_uy", "eo");
         add("es_ar", "es-AR,es-ES");
