@@ -51,7 +51,7 @@ public class CTResourcePack implements ResourcePack
     }
 
     @Override
-    public Collection<Identifier> findResources(ResourceType type, String namespace, String prefix, int maxDepth, Predicate<String> pathFilter)
+    public Collection<Identifier> findResources(ResourceType type, String namespace, String prefix, Predicate<Identifier> pathFilter)
     {
         if (type == ResourceType.SERVER_DATA) return Collections.emptyList();
         String start = CrowdinTranslate.getRootDir()+"/assets/" + namespace + "/" + prefix;
