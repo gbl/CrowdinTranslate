@@ -61,7 +61,9 @@ public class CrowdinTranslate extends Thread {
         add("en_ud", "en-UD,en-GB,en-US");
         add("en_us", "en-US");
         //add("enp", "enp");			// Anglish
-        //add("enws", "enws");			// Shakespearean English
+        add("en_ws", "en-WS");
+        add("en_7s", "en-PT");
+        add("en_ud", "en-UD");
         add("eo_uy", "eo");
         add("es_ar", "es-AR,es-ES");
         add("es_cl", "es-CL,es-ES");
@@ -119,7 +121,7 @@ public class CrowdinTranslate extends Thread {
         add("nl_be", "nl-BE,nl");
         add("nl_nl", "nl");
         add("nn_no", "nn-NO,no");
-        add("no_no‌", "no");
+        add("no_no", "no,nb");
         add("oc_fr", "oc");
         //add("ovd", "ovd");			// Elfdalian
         add("pl_pl", "pl");
