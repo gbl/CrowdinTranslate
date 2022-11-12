@@ -1,16 +1,18 @@
 package de.guntram.mcmod.crowdintranslate;
 
+import com.mojang.logging.LogUtils;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import net.minecraft.resource.InputSupplier;
 import net.minecraft.resource.ResourcePack;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.resource.metadata.ResourceMetadataReader;
 import net.minecraft.util.Identifier;
+import org.slf4j.Logger;
 
 /**
  * Code taken from LambdAurora, oral permission on Discord on 2020-10-04
@@ -18,7 +20,8 @@ import net.minecraft.util.Identifier;
 
 public class CTResourcePack implements ResourcePack
 {
-    private final List<String>                     namespaces = new ArrayList<>();
+    private final List<String> namespaces = new ArrayList<>();
+    private static final Logger LOGGER = LogUtils.getLogger();
     
     public CTResourcePack() {
         for (String s: CrowdinTranslate.registeredMods()) {
@@ -37,40 +40,40 @@ public class CTResourcePack implements ResourcePack
     }
 
     @Override
-    public InputStream openRoot(String fileName) throws IOException
+    public InputSupplier<InputStream> openRoot(String ... fileName)
     {
-        File file = new File(CrowdinTranslate.getRootDir(), fileName);
-        return new FileInputStream(file);
+        File file = new File(CrowdinTranslate.getRootDir(), fileName[0]);
+        if (file.exists()) {
+            return InputSupplier.create(file.toPath());
+        } else {
+            return null;
+        }
     }
 
     @Override
-    public InputStream open(ResourceType type, Identifier id) throws IOException
+    public InputSupplier<InputStream> open(ResourceType type, Identifier id)
     {
-        if (type == ResourceType.SERVER_DATA) throw new IOException("Reading server data from MCPatcherPatcher client resource pack");
         return this.openRoot(type.getDirectory() + "/" + id.getNamespace() + "/" + id.getPath());
     }
 
     @Override
-    public Collection<Identifier> findResources(ResourceType type, String namespace, String prefix, Predicate<Identifier> pathFilter)
-    {
-        if (type == ResourceType.SERVER_DATA) return Collections.emptyList();
+    public void findResources(ResourceType type, String namespace, String prefix, ResourcePack.ResultConsumer consumer) {
         String start = CrowdinTranslate.getRootDir()+"/assets/" + namespace + "/" + prefix;
         String[] files = new File(start).list();
+        //LOGGER.info("finding resources for {} {}", namespace, prefix);
         if (files == null || files.length == 0) {
-            return Collections.EMPTY_LIST;
+            //LOGGER.info("found nothing");
+            return;
         }
-        List<Identifier> result = Arrays.asList(files)
+        //LOGGER.info("found {} files, first is {}", files.length, files[0]);
+        List<Identifier> resultList = Arrays.asList(files)
                 .stream()
                 .map(CTResourcePack::fromPath)
                 .collect(Collectors.toList());
-        return result;
-    }
-
-    @Override
-    public boolean contains(ResourceType type, Identifier id)
-    {
-        String path = CrowdinTranslate.getRootDir() + "/" + type.getDirectory() + "/" + id.getNamespace() + "/" + id.getPath();
-        return new File(path).exists();
+        for(Identifier result: resultList) {
+            //LOGGER.info("sending {} to consumer", result.toString());
+            consumer.accept(result, open(type, result));
+        }
     }
 
     @Override
@@ -94,6 +97,11 @@ public class CTResourcePack implements ResourcePack
     @Override
     public void close()
     {
+    }
+    
+    @Override
+    public boolean isAlwaysStable() {
+        return true;
     }
 
     private static Identifier fromPath(String path)
