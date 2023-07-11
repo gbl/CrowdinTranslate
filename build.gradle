@@ -8,7 +8,7 @@ sourceCompatibility = 17
 targetCompatibility = 17
 
 archivesBaseName = "crowdin-translate"
-version = "1.4+1.19.3-alpha22w45a"
+version = "1.4+1.19.3"
 
 loom {
     mixin.defaultRefmapName = "crowdin-translate-refmap.json"
@@ -26,10 +26,10 @@ processResources {
 // They are only included to make loom happy.
 // Use old versions intentionally to make this work with a broad range of MCs.
 dependencies {
-    minecraft "com.mojang:minecraft:22w45a"
-    mappings "net.fabricmc:yarn:22w45a+build.10:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.14.10"
-    modRuntimeOnly fabricApi.module("fabric-resource-loader-v0", "0.66.1+1.19.3")
+    minecraft "com.mojang:minecraft:1.19.3"
+    mappings "net.fabricmc:yarn:1.19.3+build.2:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.14.11"
+    modRuntimeOnly fabricApi.module("fabric-resource-loader-v0", "0.68.1+1.19.3")
 }
 
 
