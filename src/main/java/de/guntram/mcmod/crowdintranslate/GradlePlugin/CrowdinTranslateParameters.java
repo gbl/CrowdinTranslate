@@ -1,40 +1,17 @@
 package de.guntram.mcmod.crowdintranslate.GradlePlugin;
 
-public class CrowdinTranslateParameters {
-    String crowdinProjectName;
-    String minecraftProjectName;
-    String jsonSourceName;
-    boolean verbose;
-    
+import org.gradle.api.provider.Property;
+
+public abstract class CrowdinTranslateParameters {
     public void setCrowdinProjectname(String s) {
-        crowdinProjectName = s;
+        getCrowdinProjectName().set(s);
     }
-    
-    public String getCrowdinProjectName() {
-        return crowdinProjectName;
-    }
-    
-    public void setMinecraftProjectName(String s) {
-        minecraftProjectName = s;
-    }
-    
-    public String getMinecraftProjectName() {
-        return minecraftProjectName;
-    }
-    
-    public void setJsonSourceName(String s) {
-        jsonSourceName = s;
-    }
-    
-    public String getJsonSourceName() {
-        return jsonSourceName;
-    }
-    
-    public void setVerbose(boolean b) {
-        verbose = b;
-    }
-    
-    public boolean getVerbose() {
-        return verbose;
-    }
+
+    public abstract Property<String> getCrowdinProjectName();
+
+    public abstract Property<String> getMinecraftProjectName();
+
+    public abstract Property<String> getJsonSourceName();
+
+    public abstract Property<Boolean> getVerbose();
 }
